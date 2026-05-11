@@ -3,6 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -17,7 +18,8 @@ from .serializers import RegisterSerializer
     description='Obtain a JWT access and refresh token pair using username and password.',
 )
 class LoginView(TokenObtainPairView):
-    pass
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_login'
 
 
 @extend_schema(
@@ -26,7 +28,8 @@ class LoginView(TokenObtainPairView):
     description='Exchange a valid refresh token for a new access token.',
 )
 class RefreshView(TokenRefreshView):
-    pass
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_refresh'
 
 
 @extend_schema(
@@ -38,6 +41,8 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_register'
 
 
 @extend_schema(
@@ -49,6 +54,8 @@ class RegisterView(generics.CreateAPIView):
 )
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_logout'
 
     def post(self, request):
         try:

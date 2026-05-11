@@ -1,10 +1,17 @@
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-class RegisterViewTests(APITestCase):
+class ThrottleAwareTestCase(APITestCase):
+    def setUp(self):
+        super().setUp()
+        cache.clear()
+
+
+class RegisterViewTests(ThrottleAwareTestCase):
     url = reverse('register')
 
     def test_register_success(self):
@@ -41,10 +48,11 @@ class RegisterViewTests(APITestCase):
         self.assertNotIn('password', response.data)
 
 
-class LoginViewTests(APITestCase):
+class LoginViewTests(ThrottleAwareTestCase):
     url = reverse('token_obtain')
 
     def setUp(self):
+        super().setUp()
         self.user = User.objects.create_user(username='alice', password='strongpass')
 
     def test_login_success_returns_tokens(self):
@@ -62,11 +70,12 @@ class LoginViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class RefreshViewTests(APITestCase):
+class RefreshViewTests(ThrottleAwareTestCase):
     login_url = reverse('token_obtain')
     refresh_url = reverse('token_refresh')
 
     def setUp(self):
+        super().setUp()
         User.objects.create_user(username='alice', password='strongpass')
 
     def test_refresh_returns_new_access_token(self):

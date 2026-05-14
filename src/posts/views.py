@@ -3,12 +3,12 @@ from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse, OpenApiParameter
 from rest_framework import generics, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Comment, Like, Post
+from .permissions import IsAuthorOrReadOnly
 from .serializers import CommentSerializer, PostSerializer
 
 
@@ -111,20 +111,11 @@ class FollowingFeedView(generics.ListAPIView):
 )
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         return post_queryset(self.request.user)
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied()
-        serializer.save()
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise PermissionDenied()
-        instance.delete()
 
 
 class LikeView(APIView):
@@ -215,20 +206,13 @@ class CommentListCreateView(generics.ListCreateAPIView):
 )
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         return Comment.objects.filter(post_id=self.kwargs['pk']).select_related('author')
 
     def get_object(self):
-        return get_object_or_404(self.get_queryset(), pk=self.kwargs['comment_pk'])
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied()
-        serializer.save()
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise PermissionDenied()
-        instance.delete()
+        obj = get_object_or_404(self.get_queryset(), pk=self.kwargs['comment_pk'])
+        self.check_object_permissions(self.request, obj)
+        return obj

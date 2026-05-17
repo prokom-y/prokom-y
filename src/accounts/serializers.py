@@ -16,11 +16,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.IntegerField())
     def get_followers_count(self, obj):
-        return obj.user.followers.count()
+        user = obj.user
+        count = getattr(user, 'followers_count', None)
+        return count if count is not None else user.followers.count()
 
     @extend_schema_field(serializers.IntegerField())
     def get_following_count(self, obj):
-        return obj.user.following.count()
+        user = obj.user
+        count = getattr(user, 'following_count', None)
+        return count if count is not None else user.following.count()
 
 
 class UserSerializer(serializers.ModelSerializer):

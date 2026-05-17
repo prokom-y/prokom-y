@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse, OpenApiParameter
 from rest_framework import generics, status
@@ -25,7 +26,15 @@ class UserSearchView(generics.ListAPIView):
         q = self.request.query_params.get('q', '').strip()
         if not q:
             return User.objects.none()
-        return User.objects.filter(username__icontains=q).select_related('profile')
+        return (
+            User.objects
+            .filter(username__icontains=q)
+            .select_related('profile')
+            .annotate(
+                followers_count=Count('followers', distinct=True),
+                following_count=Count('following', distinct=True),
+            )
+        )
 
 
 @extend_schema_view(
@@ -80,7 +89,15 @@ class FollowersListView(generics.ListAPIView):
 
     def get_queryset(self):
         target = get_object_or_404(User, username=self.kwargs['username'])
-        return User.objects.filter(following__following=target).select_related('profile')
+        return (
+            User.objects
+            .filter(following__following=target)
+            .select_related('profile')
+            .annotate(
+                followers_count=Count('followers', distinct=True),
+                following_count=Count('following', distinct=True),
+            )
+        )
 
 
 @extend_schema(
@@ -94,7 +111,15 @@ class FollowingListView(generics.ListAPIView):
 
     def get_queryset(self):
         target = get_object_or_404(User, username=self.kwargs['username'])
-        return User.objects.filter(followers__follower=target).select_related('profile')
+        return (
+            User.objects
+            .filter(followers__follower=target)
+            .select_related('profile')
+            .annotate(
+                followers_count=Count('followers', distinct=True),
+                following_count=Count('following', distinct=True),
+            )
+        )
 
 
 class FollowView(APIView):

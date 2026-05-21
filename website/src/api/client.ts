@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 
-// Access token lives in memory only — never written to storage — to reduce XSS
+// Access token lives in memory only - never written to storage - to reduce XSS
 // exposure. Refresh token goes to localStorage for persistence across page
 // reloads. This is a deliberate tradeoff: localStorage refresh tokens are
 // readable by JS, but they rotate on every use and are blacklisted on logout,
@@ -72,7 +72,7 @@ client.interceptors.response.use(
         originalRequest._retry = true;
 
         try {
-            // Use a plain axios call — not the client instance — to avoid
+            // Use a plain axios call - not the client instance - to avoid
             // triggering this interceptor again on the refresh request itself.
             const { data } = await axios.post(
                 `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,

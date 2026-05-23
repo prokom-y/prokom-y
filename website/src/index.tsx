@@ -1,21 +1,15 @@
 import { render } from "preact";
-import { LocationProvider, Router, Route } from "preact-iso";
+import { LocationProvider } from "preact-iso";
 
 import "@/style.css";
 import { AuthProvider } from "@/context/auth";
-import NotFoundPage from "@/pages/_404";
-import HomePage from "@/pages/Home";
+import { AppRouter } from "@/router";
 
 export function App() {
     return (
         <AuthProvider>
             <LocationProvider>
-                <main>
-                    <Router>
-                        <Route path="/" component={HomePage} />
-                        <Route default component={NotFoundPage} />
-                    </Router>
-                </main>
+                <AppRouter />
             </LocationProvider>
         </AuthProvider>
     );

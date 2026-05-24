@@ -6,7 +6,5 @@ export {
     default as apiClient,
     getAccessToken,
     setAccessToken,
-    getRefreshToken,
-    setRefreshToken,
     clearTokens,
 } from "./client";

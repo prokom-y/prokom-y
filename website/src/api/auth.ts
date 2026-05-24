@@ -1,8 +1,8 @@
 import client from "./client";
-import type { AuthUser, TokenPair } from "./types";
+import type { AuthUser, AccessTokenResponse } from "./types";
 
-export async function login(username: string, password: string): Promise<TokenPair> {
-    const { data } = await client.post<TokenPair>("/auth/login", { username, password });
+export async function login(username: string, password: string): Promise<AccessTokenResponse> {
+    const { data } = await client.post<AccessTokenResponse>("/auth/login", { username, password });
     return data;
 }
 
@@ -19,13 +19,13 @@ export async function register(
     return data;
 }
 
-export async function logout(refresh: string): Promise<void> {
-    await client.post("/auth/logout", { refresh });
+// Refresh token is sent automatically via the httpOnly cookie.
+export async function refreshToken(): Promise<AccessTokenResponse> {
+    const { data } = await client.post<AccessTokenResponse>("/auth/refresh", null);
+    return data;
 }
 
-export async function refreshToken(refresh: string): Promise<{ access: string; refresh?: string }> {
-    const { data } = await client.post<{ access: string; refresh?: string }>("/auth/refresh", {
-        refresh,
-    });
-    return data;
+// The server blacklists the refresh cookie and clears it.
+export async function logout(): Promise<void> {
+    await client.post("/auth/logout");
 }

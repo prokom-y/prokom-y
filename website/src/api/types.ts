@@ -43,9 +43,8 @@ export interface Comment {
     updated_at: string;
 }
 
-export interface TokenPair {
+export interface AccessTokenResponse {
     access: string;
-    refresh: string;
 }
 
 export interface PaginatedResponse<T> {

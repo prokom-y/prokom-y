@@ -44,7 +44,11 @@ client.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config as RetryableRequestConfig;
 
-        if (error.response?.status !== 401 || originalRequest._retry) {
+        // Skip retry for auth endpoints: a 401 from /auth/login means wrong
+        // credentials (not an expired session), and /auth/refresh itself uses
+        // a plain axios call that bypasses this interceptor entirely.
+        const isAuthEndpoint = originalRequest.url?.startsWith("/auth/");
+        if (error.response?.status !== 401 || originalRequest._retry || isAuthEndpoint) {
             return Promise.reject(error);
         }
 

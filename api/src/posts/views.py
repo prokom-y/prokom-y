@@ -64,7 +64,11 @@ class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return post_queryset(self.request.user)
+        qs = post_queryset(self.request.user)
+        author = self.request.query_params.get('author', '').strip()
+        if author:
+            qs = qs.filter(author__username=author)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

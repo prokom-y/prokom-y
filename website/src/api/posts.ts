@@ -1,8 +1,8 @@
 import client from "./client";
 import type { Post, Comment, PaginatedResponse } from "./types";
 
-export async function getPosts(): Promise<PaginatedResponse<Post>> {
-    const { data } = await client.get<PaginatedResponse<Post>>("/posts");
+export async function getPosts(params?: { author?: string }): Promise<PaginatedResponse<Post>> {
+    const { data } = await client.get<PaginatedResponse<Post>>("/posts", { params });
     return data;
 }
 

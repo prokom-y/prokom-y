@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import { cn } from "@/lib/utils";
 
 interface AvatarProps {
@@ -14,19 +15,17 @@ const sizeClasses = {
 };
 
 export default function Avatar({ username, avatarUrl, size = "md", className }: AvatarProps) {
+    const [imgFailed, setImgFailed] = useState(false);
     const initials = username.slice(0, 2).toUpperCase();
-    const classes = cn("rounded-full shrink-0", sizeClasses[size], className);
+    const base = cn("rounded-full shrink-0", sizeClasses[size], className);
 
-    if (avatarUrl) {
+    if (avatarUrl && !imgFailed) {
         return (
             <img
                 src={avatarUrl}
                 alt={username}
-                className={cn(classes, "object-cover")}
-                onError={(e) => {
-                    // Fall back to initials div on broken image.
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
+                className={cn(base, "object-cover")}
+                onError={() => setImgFailed(true)}
             />
         );
     }
@@ -34,7 +33,7 @@ export default function Avatar({ username, avatarUrl, size = "md", className }: 
     return (
         <div
             className={cn(
-                classes,
+                base,
                 "flex items-center justify-center bg-primary/15 font-semibold text-primary",
             )}
         >

@@ -15,6 +15,8 @@ export interface PaginationResult<T> {
     goToPage: (url: string) => Promise<void>;
     refresh: () => Promise<void>;
     prepend: (item: T) => void;
+    replaceResult: (predicate: (item: T) => boolean, replacement: T) => void;
+    removeResult: (predicate: (item: T) => boolean) => void;
 }
 
 // deps controls when results are reset and re-fetched from page 1.
@@ -111,11 +113,19 @@ export function usePagination<T>(fetchFn: FetchFn<T>, deps: unknown[] = []): Pag
         }
     }, []);
 
-    // Optimistically add an item to the front without re-fetching.
     const prepend = useCallback((item: T) => {
         setResults((prev) => [item, ...prev]);
         setCount((c) => c + 1);
     }, []);
 
-    return { results, count, nextUrl, previousUrl, isLoading, error, loadMore, goToPage, refresh, prepend };
+    const replaceResult = useCallback((predicate: (item: T) => boolean, replacement: T) => {
+        setResults((prev) => prev.map((item) => (predicate(item) ? replacement : item)));
+    }, []);
+
+    const removeResult = useCallback((predicate: (item: T) => boolean) => {
+        setResults((prev) => prev.filter((item) => !predicate(item)));
+        setCount((c) => Math.max(0, c - 1));
+    }, []);
+
+    return { results, count, nextUrl, previousUrl, isLoading, error, loadMore, goToPage, refresh, prepend, replaceResult, removeResult };
 }

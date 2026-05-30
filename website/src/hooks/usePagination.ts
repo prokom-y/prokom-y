@@ -15,6 +15,7 @@ export interface PaginationResult<T> {
     goToPage: (url: string) => Promise<void>;
     refresh: () => Promise<void>;
     prepend: (item: T) => void;
+    append: (item: T) => void;
     replaceResult: (predicate: (item: T) => boolean, replacement: T) => void;
     removeResult: (predicate: (item: T) => boolean) => void;
 }
@@ -118,6 +119,11 @@ export function usePagination<T>(fetchFn: FetchFn<T>, deps: unknown[] = []): Pag
         setCount((c) => c + 1);
     }, []);
 
+    const append = useCallback((item: T) => {
+        setResults((prev) => [...prev, item]);
+        setCount((c) => c + 1);
+    }, []);
+
     const replaceResult = useCallback((predicate: (item: T) => boolean, replacement: T) => {
         setResults((prev) => prev.map((item) => (predicate(item) ? replacement : item)));
     }, []);
@@ -127,5 +133,5 @@ export function usePagination<T>(fetchFn: FetchFn<T>, deps: unknown[] = []): Pag
         setCount((c) => Math.max(0, c - 1));
     }, []);
 
-    return { results, count, nextUrl, previousUrl, isLoading, error, loadMore, goToPage, refresh, prepend, replaceResult, removeResult };
+    return { results, count, nextUrl, previousUrl, isLoading, error, loadMore, goToPage, refresh, prepend, append, replaceResult, removeResult };
 }

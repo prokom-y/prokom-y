@@ -17,6 +17,7 @@ export interface PublicUser {
     id: number;
     username: string;
     profile: Profile;
+    is_following: boolean;
 }
 
 export interface PostAuthor {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserCard from "@/components/UserCard";
 import PostCard from "@/components/PostCard";
+import { PostCardListSkeleton, UserCardListSkeleton } from "@/components/Skeletons";
 import { searchUsers } from "@/api/accounts";
 import { searchPosts } from "@/api/posts";
 import { usePagination } from "@/hooks/usePagination";
@@ -137,7 +138,7 @@ function UsersPanel({ users, isLoading, q, nextUrl, loadMore }: UsersPanelProps)
             </p>
         );
     }
-    if (isLoading && users.length === 0) return <UsersSkeleton />;
+    if (isLoading && users.length === 0) return <UserCardListSkeleton />;
     if (users.length === 0) {
         return (
             <p className="py-12 text-center text-sm text-muted-foreground">
@@ -196,7 +197,7 @@ function PostsPanel({
             </p>
         );
     }
-    if (isLoading && posts.length === 0) return <PostsSkeleton />;
+    if (isLoading && posts.length === 0) return <PostCardListSkeleton count={3} />;
     if (posts.length === 0) {
         return (
             <p className="py-12 text-center text-sm text-muted-foreground">
@@ -231,48 +232,5 @@ function PostsPanel({
                 </div>
             )}
         </>
-    );
-}
-
-function UsersSkeleton() {
-    return (
-        <div className="space-y-px">
-            {[1, 2, 3].map((i) => (
-                <div
-                    key={i}
-                    className="animate-pulse border border-border bg-card p-4 first:rounded-t-lg last:rounded-b-lg"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="size-12 shrink-0 rounded-full bg-muted" />
-                        <div className="flex-1 space-y-2">
-                            <div className="h-3 w-1/4 rounded bg-muted" />
-                            <div className="h-3 w-1/2 rounded bg-muted" />
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-function PostsSkeleton() {
-    return (
-        <div className="space-y-px">
-            {[1, 2, 3].map((i) => (
-                <div
-                    key={i}
-                    className="animate-pulse border border-border bg-card p-4 first:rounded-t-lg last:rounded-b-lg"
-                >
-                    <div className="flex gap-3">
-                        <div className="size-12 shrink-0 rounded-full bg-muted" />
-                        <div className="flex-1 space-y-2 py-1">
-                            <div className="h-3 w-1/4 rounded bg-muted" />
-                            <div className="h-3 w-full rounded bg-muted" />
-                            <div className="h-3 w-3/4 rounded bg-muted" />
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
     );
 }

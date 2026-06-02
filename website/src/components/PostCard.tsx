@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { Heart, Loader2, MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +39,7 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
         } catch {
             setLiked(wasLiked);
             setLikesCount((c) => (wasLiked ? c + 1 : c - 1));
+            toast.error("Couldn't update like. Please try again.");
         }
     }
 

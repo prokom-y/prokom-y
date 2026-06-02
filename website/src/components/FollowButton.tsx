@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { followUser, unfollowUser } from "@/api/accounts";
@@ -25,6 +26,7 @@ export default function FollowButton({ username, initialIsFollowing, onToggle }:
         } catch {
             setIsFollowing(prev);
             onToggle?.(prev);
+            toast.error(`Couldn't ${prev ? "unfollow" : "follow"} @${username}. Please try again.`);
         } finally {
             setIsLoading(false);
         }

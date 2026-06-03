@@ -9,6 +9,8 @@ Built with [Django 5](https://www.djangoproject.com/) and [Django REST Framework
 - Python 3.10+
 - PostgreSQL (running and accessible)
 
+> **Using Docker?** Run `docker compose up --build` from the repository root - no manual setup needed. See the [root README](../README.md).
+
 ## Setup
 
 ```bash

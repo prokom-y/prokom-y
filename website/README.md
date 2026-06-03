@@ -10,6 +10,8 @@ Built with [Preact](https://preactjs.com/) and TypeScript. A client-side rendere
 - pnpm
 - The [API](../api/README.md) running at `http://localhost:8000` (or configure `VITE_API_BASE_URL`)
 
+> **Using Docker?** Run `docker compose up --build` from the repository root - no manual setup needed. See the [root README](../README.md).
+
 ## Setup
 
 ```bash

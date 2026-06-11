@@ -6,13 +6,23 @@ from .models import Profile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = ['bio', 'avatar_url', 'followers_count', 'following_count', 'created_at']
-        read_only_fields = ['followers_count', 'following_count', 'created_at']
+        read_only_fields = ['avatar_url', 'followers_count', 'following_count', 'created_at']
+
+    @extend_schema_field(serializers.URLField(allow_null=True))
+    def get_avatar_url(self, obj):
+        if not obj.avatar:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.avatar.url)
+        return obj.avatar.url
 
     @extend_schema_field(serializers.IntegerField())
     def get_followers_count(self, obj):
@@ -25,6 +35,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         user = obj.user
         count = getattr(user, 'following_count', None)
         return count if count is not None else user.following.count()
+
+
+class AvatarUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['avatar']
 
 
 class UserSerializer(serializers.ModelSerializer):

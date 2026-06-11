@@ -38,7 +38,7 @@ export default function PostComposer({ onPost }: PostComposerProps) {
     }
 
     return (
-        <div className="mb-px rounded-t-lg border border-border bg-card p-4">
+        <div className="mb-2 rounded-lg border border-border bg-card p-4">
             <div className="flex gap-3">
                 <Avatar
                     username={currentUser.username}
@@ -50,7 +50,9 @@ export default function PostComposer({ onPost }: PostComposerProps) {
                     <Textarea
                         placeholder="What's happening?"
                         value={content}
-                        onInput={(e) => setContent((e.target as HTMLTextAreaElement).value)}
+                        onInput={(e) =>
+                            setContent((e.target as HTMLTextAreaElement).value)
+                        }
                         disabled={isSubmitting}
                         aria-invalid={overLimit || undefined}
                     />
@@ -62,13 +64,19 @@ export default function PostComposer({ onPost }: PostComposerProps) {
                             {content.length}/500
                         </span>
                         <div className="flex items-center gap-2">
-                            {error && <span className="text-xs text-destructive">{error}</span>}
+                            {error && (
+                                <span className="text-xs text-destructive">
+                                    {error}
+                                </span>
+                            )}
                             <Button
                                 type="submit"
                                 size="sm"
                                 disabled={isEmpty || overLimit || isSubmitting}
                             >
-                                {isSubmitting && <Loader2 className="animate-spin" />}
+                                {isSubmitting && (
+                                    <Loader2 className="animate-spin" />
+                                )}
                                 Post
                             </Button>
                         </div>

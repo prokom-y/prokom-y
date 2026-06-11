@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: ComponentChildren })
                 <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
                     {/* Logo */}
                     <a
-                        href={isAuthenticated.value ? "/feed" : "/login"}
+                        href={isAuthenticated.value ? "/explore" : "/login"}
                         className="font-heading text-2xl font-bold text-primary"
                     >
                         Y

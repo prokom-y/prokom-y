@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -50,6 +50,10 @@ class LoginView(TokenObtainPairView):
     summary='Refresh token',
     description='Exchange the refresh token cookie for a new access token.',
     request=None,
+    responses={
+        200: OpenApiResponse(description='New access token issued.'),
+        401: OpenApiResponse(description='Refresh token missing or invalid.'),
+    },
 )
 class RefreshView(APIView):
     permission_classes = [AllowAny]

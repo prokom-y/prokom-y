@@ -1,17 +1,18 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { isAxiosError } from "axios";
-import { CalendarDays, Heart, Loader2, MessageCircle, Pencil } from "lucide-react";
+import { CalendarDays, Heart, Loader2, MessageCircle, Pencil, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Avatar from "@/components/Avatar";
 import { user } from "@/context/auth";
-import { updateProfile } from "@/api/accounts";
+import { updateProfile, uploadAvatar } from "@/api/accounts";
 import { getPosts } from "@/api/posts";
 import { usePagination } from "@/hooks/usePagination";
 import { formatRelativeTime } from "@/lib/utils";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export default function ProfilePage() {
     // ProtectedRoute guarantees user is non-null by the time this renders.
@@ -19,9 +20,11 @@ export default function ProfilePage() {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editBio, setEditBio] = useState("");
-    const [editAvatarUrl, setEditAvatarUrl] = useState("");
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const {
         results: posts,
@@ -32,27 +35,52 @@ export default function ProfilePage() {
 
     function startEditing() {
         setEditBio(currentUser.profile.bio ?? "");
-        setEditAvatarUrl(currentUser.profile.avatar_url ?? "");
+        setAvatarFile(null);
+        setAvatarPreview(null);
         setSaveError(null);
         setIsEditing(true);
     }
 
     function cancelEditing() {
         setIsEditing(false);
+        setAvatarFile(null);
+        setAvatarPreview(null);
         setSaveError(null);
+    }
+
+    function handleFileSelect(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        if (file.size > MAX_FILE_SIZE) {
+            setSaveError("Image must be smaller than 5 MB.");
+            return;
+        }
+        setSaveError(null);
+        setAvatarFile(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
+        reader.readAsDataURL(file);
     }
 
     async function handleSave() {
         setIsSaving(true);
         setSaveError(null);
         try {
-            const updated = await updateProfile({ bio: editBio, avatar_url: editAvatarUrl });
+            let updated = currentUser;
+            if (avatarFile) {
+                updated = await uploadAvatar(avatarFile);
+            }
+            if (editBio !== (currentUser.profile.bio ?? "")) {
+                updated = await updateProfile({ bio: editBio });
+            }
             user.value = updated;
             setIsEditing(false);
+            setAvatarFile(null);
+            setAvatarPreview(null);
         } catch (err) {
             setSaveError(
                 isAxiosError(err) && err.response?.status === 400
-                    ? "Invalid data. Please check your avatar URL and bio."
+                    ? "Invalid data. Please check your image and bio."
                     : "Failed to save changes. Please try again.",
             );
         } finally {
@@ -130,20 +158,44 @@ export default function ProfilePage() {
                 {/* ── Edit form (inline) ── */}
                 {isEditing && (
                     <div className="mt-5 space-y-4 border-t border-border pt-5">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="avatar_url">Avatar URL</Label>
-                            <Input
-                                id="avatar_url"
-                                type="url"
-                                placeholder="https://example.com/avatar.jpg"
-                                value={editAvatarUrl}
-                                onInput={(e) =>
-                                    setEditAvatarUrl((e.target as HTMLInputElement).value)
-                                }
-                                disabled={isSaving}
-                            />
+                        {/* Avatar upload */}
+                        <div className="space-y-2">
+                            <Label>Avatar</Label>
+                            <div className="flex items-center gap-4">
+                                <Avatar
+                                    username={currentUser.username}
+                                    avatarUrl={avatarPreview ?? currentUser.profile.avatar_url}
+                                    size="lg"
+                                />
+                                <div className="space-y-1">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleFileSelect}
+                                        disabled={isSaving}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isSaving}
+                                    >
+                                        <Upload className="size-4" />
+                                        {avatarFile ? "Change photo" : "Upload photo"}
+                                    </Button>
+                                    {avatarFile && (
+                                        <p className="text-xs text-muted-foreground">
+                                            {avatarFile.name}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
+                        {/* Bio */}
                         <div className="space-y-1.5">
                             <Label htmlFor="bio">Bio</Label>
                             <Textarea

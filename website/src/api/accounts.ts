@@ -6,11 +6,17 @@ export async function getOwnProfile(): Promise<AuthUser> {
     return data;
 }
 
-export async function updateProfile(fields: {
-    bio?: string;
-    avatar_url?: string;
-}): Promise<AuthUser> {
+export async function updateProfile(fields: { bio?: string }): Promise<AuthUser> {
     const { data } = await client.patch<AuthUser>("/accounts/profile", fields);
+    return data;
+}
+
+export async function uploadAvatar(file: File): Promise<AuthUser> {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const { data } = await client.post<AuthUser>("/accounts/profile/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
     return data;
 }
 

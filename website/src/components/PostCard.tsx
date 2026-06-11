@@ -4,6 +4,17 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Avatar from "@/components/Avatar";
 import { user } from "@/context/auth";
 import { likePost, unlikePost, updatePost, deletePost } from "@/api/posts";
@@ -66,7 +77,6 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
     }
 
     async function handleDelete() {
-        if (!window.confirm("Delete this post?")) return;
         setIsDeleting(true);
         try {
             await deletePost(post.id);
@@ -82,7 +92,11 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
         <div className="border border-border bg-card p-4 first:rounded-t-lg last:rounded-b-lg">
             <div className="flex gap-3">
                 <a href={`/users/${post.author.username}`} className="shrink-0">
-                    <Avatar username={post.author.username} avatarUrl={null} size="md" />
+                    <Avatar
+                        username={post.author.username}
+                        avatarUrl={null}
+                        size="md"
+                    />
                 </a>
 
                 <div className="min-w-0 flex-1">
@@ -110,19 +124,40 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                                 >
                                     <Pencil />
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    onClick={handleDelete}
-                                    disabled={isDeleting}
-                                    aria-label="Delete post"
-                                >
-                                    {isDeleting ? (
-                                        <Loader2 className="animate-spin" />
-                                    ) : (
-                                        <Trash2 />
-                                    )}
-                                </Button>
+
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            disabled={isDeleting}
+                                            aria-label="Delete post"
+                                        >
+                                            {isDeleting ? (
+                                                <Loader2 className="animate-spin" />
+                                            ) : (
+                                                <Trash2 />
+                                            )}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Delete post?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                variant="destructive"
+                                                onClick={handleDelete}
+                                            >
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
                         )}
                     </div>
@@ -133,7 +168,9 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                             <Textarea
                                 value={editContent}
                                 onInput={(e) =>
-                                    setEditContent((e.target as HTMLTextAreaElement).value)
+                                    setEditContent(
+                                        (e.target as HTMLTextAreaElement).value,
+                                    )
                                 }
                                 disabled={isSaving}
                                 aria-invalid={overLimit || undefined}
@@ -148,14 +185,22 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                                 </span>
                                 <div className="flex items-center gap-1">
                                     {editError && (
-                                        <span className="text-xs text-destructive">{editError}</span>
+                                        <span className="text-xs text-destructive">
+                                            {editError}
+                                        </span>
                                     )}
                                     <Button
                                         size="xs"
                                         onClick={handleSave}
-                                        disabled={isSaving || !editContent.trim() || overLimit}
+                                        disabled={
+                                            isSaving ||
+                                            !editContent.trim() ||
+                                            overLimit
+                                        }
                                     >
-                                        {isSaving && <Loader2 className="animate-spin" />}
+                                        {isSaving && (
+                                            <Loader2 className="animate-spin" />
+                                        )}
                                         Save
                                     </Button>
                                     <Button
@@ -180,14 +225,16 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                         <div className="mt-3 flex items-center gap-4">
                             <button
                                 onClick={toggleLike}
-                                className={`flex items-center gap-1.5 text-xs transition-colors ${
+                                className={`flex items-center gap-1.5 text-xs transition-colors hover:cursor-pointer ${
                                     liked
                                         ? "text-red-500 hover:text-red-400"
                                         : "text-muted-foreground hover:text-foreground"
                                 }`}
                                 aria-label={liked ? "Unlike" : "Like"}
                             >
-                                <Heart className={`size-3.5 ${liked ? "fill-current" : ""}`} />
+                                <Heart
+                                    className={`size-3.5 ${liked ? "fill-current" : ""}`}
+                                />
                                 {likesCount}
                             </button>
 

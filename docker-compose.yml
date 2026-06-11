@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: y-database
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: y_db
@@ -14,9 +15,10 @@ services:
       retries: 5
 
   api:
+    container_name: y-api
     build: ./api
     ports:
-      - "8000:8000"
+      - "3000:3000"
     environment:
       SECRET_KEY: django-insecure-dev-key-change-in-production
       DEBUG: "True"
@@ -26,7 +28,7 @@ services:
       DB_PASSWORD: postgres
       DB_HOST: db
       DB_PORT: "5432"
-      CORS_ALLOWED_ORIGINS: "http://localhost:3000"
+      CORS_ALLOWED_ORIGINS: "http://127.0.0.1:5173"
     volumes:
       - ./api:/app
     depends_on:
@@ -34,11 +36,12 @@ services:
         condition: service_healthy
 
   website:
+    container_name: y-website
     build: ./website
     ports:
-      - "3000:3000"
+      - "5173:5173"
     environment:
-      VITE_API_BASE_URL: "http://localhost:8000"
+      VITE_API_BASE_URL: "http://127.0.0.1:3000"
     volumes:
       - ./website:/app
       - /app/node_modules

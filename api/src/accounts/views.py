@@ -3,12 +3,13 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse, OpenApiParameter
 from rest_framework import generics, status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Follow
-from .serializers import ProfileSerializer, PublicUserSerializer, UserSerializer
+from .serializers import AvatarUploadSerializer, ProfileSerializer, PublicUserSerializer, UserSerializer
 
 @extend_schema(
     tags=['Accounts'],
@@ -55,7 +56,7 @@ class OwnProfileView(generics.RetrieveUpdateAPIView):
     @extend_schema(
         tags=['Accounts'],
         summary='Update own profile',
-        description='Partially update the authenticated user\'s profile (bio, avatar_url).',
+        description='Partially update the authenticated user\'s profile (bio).',
         request=ProfileSerializer,
         responses={200: UserSerializer},
     )
@@ -63,7 +64,29 @@ class OwnProfileView(generics.RetrieveUpdateAPIView):
         serializer = ProfileSerializer(request.user.profile, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={'request': request}).data)
+
+
+@extend_schema(
+    tags=['Accounts'],
+    summary='Upload avatar',
+    description='Upload a new avatar image for the authenticated user. Replaces any existing avatar.',
+    request=AvatarUploadSerializer,
+    responses={200: UserSerializer},
+)
+class AvatarUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        profile = request.user.profile
+        old_avatar = profile.avatar or None
+        serializer = AvatarUploadSerializer(profile, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if old_avatar:
+            old_avatar.delete(save=False)
+        serializer.save()
+        return Response(UserSerializer(request.user, context={'request': request}).data)
 
 
 @extend_schema(
@@ -129,6 +152,7 @@ class FollowView(APIView):
         tags=['Accounts'],
         summary='Follow a user',
         description='Follow the specified user. Idempotent - following an already-followed user is a no-op.',
+        request=None,
         responses={
             204: OpenApiResponse(description='Successfully followed.'),
             400: OpenApiResponse(description='Cannot follow yourself.'),
@@ -146,6 +170,7 @@ class FollowView(APIView):
         tags=['Accounts'],
         summary='Unfollow a user',
         description='Unfollow the specified user. Idempotent \- unfollowing a non-followed user is a no-op.',
+        request=None,
         responses={
             204: OpenApiResponse(description='Successfully unfollowed.'),
             404: OpenApiResponse(description='User not found.'),

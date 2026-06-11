@@ -129,6 +129,7 @@ class LikeView(APIView):
         tags=['Posts'],
         summary='Like a post',
         description='Like a post. Idempotent - liking an already-liked post is a no-op.',
+        request=None,
         responses={
             204: OpenApiResponse(description='Post liked.'),
             404: OpenApiResponse(description='Post not found.'),
@@ -143,6 +144,7 @@ class LikeView(APIView):
         tags=['Posts'],
         summary='Unlike a post',
         description='Remove a like from a post. Idempotent - unliking a non-liked post is a no-op.',
+        request=None,
         responses={
             204: OpenApiResponse(description='Post unliked.'),
             404: OpenApiResponse(description='Post not found.'),

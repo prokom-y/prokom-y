@@ -5,3 +5,4 @@ drf-spectacular~=0.29
 psycopg2-binary~=2.9
 python-decouple~=3.8
 django-cors-headers~=4.3
+Pillow~=11.2

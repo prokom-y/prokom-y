@@ -43,7 +43,7 @@ function RootRedirect() {
     const { route } = useLocation();
     useEffect(() => {
         if (!isLoading.value) {
-            route(isAuthenticated.value ? "/feed" : "/login");
+            route(isAuthenticated.value ? "/explore" : "/login");
         }
     }, [isLoading.value, isAuthenticated.value]);
     return null;

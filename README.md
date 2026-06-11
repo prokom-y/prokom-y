@@ -19,9 +19,9 @@ Requires [Docker](https://docs.docker.com/get-docker/) with the Compose plugin.
 docker compose up --build
 ```
 
-- Frontend: `http://localhost:3000`
-- API: `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
+- Frontend: `http://127.0.0.1:5173`
+- API: `http://127.0.0.1:3000`
+- API docs: `http://127.0.0.1:3000/docs`
 
 Migrations run automatically on startup. Database data is persisted in a named Docker volume.
 
